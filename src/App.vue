@@ -1,16 +1,20 @@
 <template>
   <div id="app">
-<Editor/>
+  <Toolbar/>
+    <Editor :max="250"/>
   </div>
 </template>
 
 <script>
 import Editor from "@/components/Editor";
+import Toolbar from "@/components/Toolbar";
+
 
 export default {
   name: 'App',
   components: {
-    Editor
+    Editor,
+    Toolbar
   }
 }
 </script>
@@ -22,6 +26,6 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 30px;
 }
 </style>

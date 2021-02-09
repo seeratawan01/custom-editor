@@ -26,9 +26,6 @@ export default {
     background:#f4f4f4;
     padding: 5px;
     border-radius:3px;
-    position: fixed;
-    top: 20px;
-    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
