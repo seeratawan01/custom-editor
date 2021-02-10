@@ -4,18 +4,14 @@
       Count: {{ character_count }} Limit: {{ this.max }}
     </div>
     <div class="editor-container">
-      <textarea
-        contenteditable="true"
-        class="editor"
-        name="single-box"
-        id="single-box"
-        @input="type($event)"
-      ></textarea>
+      <textarea :value="value" class="editor" @input="type($event)"></textarea>
+
       <div class="editor" id="clonedEditor" data-placeholder="Clone...">
         <span class="desc"></span>
         <span class="exceed"></span>
       </div>
     </div>
+    {{ getLastWord(value) }}
   </div>
 </template>
 
@@ -34,6 +30,9 @@ export default {
   props: {
     max: {
       default: 250,
+    },
+    value: {
+      default: "",
     },
   },
   data() {
@@ -63,9 +62,18 @@ export default {
       e.target.style.overflow = "hidden";
       e.target.style.height = "auto";
       e.target.style.height = e.target.scrollHeight + "px";
+
+      this.$emit("input", e.target.value);
     },
     replaceInnerHTML(oldDiv, text, node = 0) {
       let newDiv = oldDiv.cloneNode(true);
+
+      // console.log(
+      //   text.trim().substring(0, text.trim().lastIndexOf(" ") + 1) +
+      //     this.processTextHtml(this.getLastWord(text))
+      // );
+
+      console.log(this.processWord(this.getLastWord(text)));
 
       if (node === 0) {
         newDiv.childNodes[0].innerHTML = this.processTextHtml(text);
@@ -79,6 +87,14 @@ export default {
       }
 
       oldDiv.parentNode.replaceChild(newDiv, oldDiv);
+    },
+    processWord(word) {
+      const procesedWord = linkify.find(word);
+      if (procesedWord.length === 0) {
+        return null;
+      } else {
+        return procesedWord[0].type;
+      }
     },
     processTextHtml(text) {
       return linkifyStr(text, {
@@ -96,7 +112,7 @@ export default {
           }
           return href;
         },
-        nl2br: true,
+        // nl2br: true,
         target: "_blank",
         // format: function (value, type) {
         //   if (type === 'url' && value.length > 50) {
@@ -105,6 +121,10 @@ export default {
         //   return value;
         // }
       });
+    },
+    getLastWord(words) {
+      let wordStr = words.trim();
+      return wordStr.substring(wordStr.length, wordStr.lastIndexOf(" ") + 1);
     },
   },
 };
@@ -147,6 +167,10 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
+}
+
+.editor > * {
+  white-space: pre-wrap;
 }
 
 textarea {

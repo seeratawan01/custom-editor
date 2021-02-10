@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-  <Toolbar/>
-    <Editor :max="250"/>
+    <Toolbar />
+    <Editor v-model="text" :max="250" />
   </div>
 </template>
 
@@ -9,14 +9,18 @@
 import Editor from "@/components/Editor";
 import Toolbar from "@/components/Toolbar";
 
-
 export default {
-  name: 'App',
+  name: "App",
+  data() {
+    return {
+      text: "",
+    };
+  },
   components: {
     Editor,
-    Toolbar
-  }
-}
+    Toolbar,
+  },
+};
 </script>
 
 <style>
