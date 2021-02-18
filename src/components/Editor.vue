@@ -23,7 +23,10 @@ import hashtag from "linkifyjs/plugins/hashtag";
 mention(linkify);
 hashtag(linkify);
 
+import anchorme from "anchorme";
+
 import linkifyStr from "linkifyjs/string";
+import { encode } from "html-entities";
 
 export default {
   name: "Editor",
@@ -73,16 +76,18 @@ export default {
       //     this.processTextHtml(this.getLastWord(text))
       // );
 
-      console.log(this.processWord(this.getLastWord(text)));
+      // console.log(this.processWord(this.getLastWord(text)));
 
       if (node === 0) {
-        newDiv.childNodes[0].innerHTML = this.processTextHtml(text);
-      } else {
-        newDiv.childNodes[0].innerHTML = this.processTextHtml(
-          text.substring(0, this.max)
+        newDiv.childNodes[0].innerHTML = this.processTextHtmlWithAnchorme(
+          encode(text)
         );
-        newDiv.childNodes[1].innerHTML = this.processTextHtml(
-          text.substring(this.max, text.length)
+      } else {
+        newDiv.childNodes[0].innerHTML = this.processTextHtmlWithAnchorme(
+          encode(text.substring(0, this.max))
+        );
+        newDiv.childNodes[1].innerHTML = this.processTextHtmlWithAnchorme(
+          encode(text.substring(this.max, text.length))
         );
       }
 
@@ -96,7 +101,7 @@ export default {
         return procesedWord[0].type;
       }
     },
-    processTextHtml(text) {
+    processTextHtmlWithLinkify(text) {
       return linkifyStr(text, {
         className: "custom-linkified",
         attributes: {
@@ -122,9 +127,124 @@ export default {
         // }
       });
     },
+
+    processTextHtmlWithAnchorme(text) {
+      return anchorme({
+        input: text,
+        // use some options
+        options: {
+          attributes: {
+            target: "_blank",
+            class: "detected",
+          },
+        },
+        // and extensions
+        extensions: [
+          // an extension for hashtag search
+          {
+            test: /#(\w|_)+/gi,
+            transform: (string) =>
+              `<a href='https://twitter.com/hashtag/${string.substring(
+                1
+              )}'>${string}</a>`,
+          },
+          // an extension for mentions
+          {
+            test: /@(\w|_)+/gi,
+            transform: (string) =>
+              `<a href='https://twitter.com/${string.substring(
+                1
+              )}'>${string}</a>`,
+          },
+        ],
+      });
+    },
     getLastWord(words) {
       let wordStr = words.trim();
       return wordStr.substring(wordStr.length, wordStr.lastIndexOf(" ") + 1);
+    },
+
+    /**
+     * Return an object with the selection range or cursor position (if both have the same value)
+     * @param {DOMElement} el A dom element of a textarea or input text.
+     * @return {Object} reference Object with 2 properties (start, end, length) with the identifier of the location of the cursor and selected text.
+     **/
+    getInputSelection(el) {
+      var start = 0,
+        end = 0,
+        normalizedValue,
+        range,
+        textInputRange,
+        len,
+        endRange,
+        val,
+        nearestWord;
+
+      val = el.value.trim();
+      if (
+        typeof el.selectionStart == "number" &&
+        typeof el.selectionEnd == "number"
+      ) {
+        start = el.selectionStart;
+        end = el.selectionEnd;
+      } else {
+        range = document.selection.createRange();
+
+        if (range && range.parentElement() == el) {
+          len = el.value.length;
+          normalizedValue = el.value.replace(/\r\n/g, "\n");
+
+          // Create a working TextRange that lives only in the input
+          textInputRange = el.createTextRange();
+          textInputRange.moveToBookmark(range.getBookmark());
+
+          // Check if the start and end of the selection are at the very end
+          // of the input, since moveStart/moveEnd doesn't return what we want
+          // in those cases
+          endRange = el.createTextRange();
+          endRange.collapse(false);
+
+          if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
+            start = end = len;
+          } else {
+            start = -textInputRange.moveStart("character", -len);
+            start += normalizedValue.slice(0, start).split("\n").length - 1;
+
+            if (textInputRange.compareEndPoints("EndToEnd", endRange) > -1) {
+              end = len;
+            } else {
+              end = -textInputRange.moveEnd("character", -len);
+              end += normalizedValue.slice(0, end).split("\n").length - 1;
+            }
+          }
+        }
+      }
+
+      console.log(
+        val.charAt(end),
+        val.substring(0, end).trim().lastIndexOf(" ") + 1,
+        val.substring(end, el.value.length)
+      );
+
+      if (val.charAt(end) === "") {
+        nearestWord = val
+          .substring(end, val.substring(0, end).trim().lastIndexOf(" ") + 1)
+          .trim();
+      } else {
+        nearestWord = val
+          .substring(
+            val.substring(0, end).trim().lastIndexOf(" ") + 1,
+            val.substring(end, el.value.length).indexOf(" ") + 1
+          )
+          .trim();
+      }
+
+      return {
+        start: start,
+        end: end,
+        length: el.value.length,
+        nearestWord: nearestWord,
+      };
     },
   },
 };
@@ -171,6 +291,10 @@ export default {
 
 .editor > * {
   white-space: pre-wrap;
+}
+
+.editor * {
+  margin: 0 !important;
 }
 
 textarea {
