@@ -1,12 +1,15 @@
 <template>
   <div id="app">
     <Toolbar />
-    <Editor v-model="text" :max="250" />
+    <!-- <Editor v-model="text" :max="250" /> -->
+    <CEditor />
   </div>
 </template>
 
 <script>
-import Editor from "@/components/Editor";
+// import Editor from "@/components/Editor";
+import CEditor from "@/components/ContentEditable/CEditor";
+
 import Toolbar from "@/components/Toolbar";
 
 export default {
@@ -17,8 +20,9 @@ export default {
     };
   },
   components: {
-    Editor,
+    // Editor,
     Toolbar,
+    CEditor,
   },
 };
 </script>

@@ -11,7 +11,6 @@
         <span class="exceed"></span>
       </div>
     </div>
-    {{ getLastWord(value) }}
   </div>
 </template>
 
@@ -20,12 +19,12 @@ import * as linkify from "linkifyjs";
 import mention from "linkifyjs/plugins/mention";
 import hashtag from "linkifyjs/plugins/hashtag";
 // var linkifyHtml = require('linkifyjs/html')
+import linkifyStr from "linkifyjs/string";
 mention(linkify);
 hashtag(linkify);
 
 import anchorme from "anchorme";
 
-import linkifyStr from "linkifyjs/string";
 import { encode } from "html-entities";
 
 export default {
@@ -79,16 +78,13 @@ export default {
       // console.log(this.processWord(this.getLastWord(text)));
 
       if (node === 0) {
-        newDiv.childNodes[0].innerHTML = this.processTextHtmlWithAnchorme(
-          encode(text)
-        );
+        newDiv.childNodes[0].innerHTML = this.processTextHtmlWithAnchorme(text);
       } else {
         newDiv.childNodes[0].innerHTML = this.processTextHtmlWithAnchorme(
-          encode(text.substring(0, this.max))
+          text.substring(0, this.max)
         );
-        newDiv.childNodes[1].innerHTML = this.processTextHtmlWithAnchorme(
-          encode(text.substring(this.max, text.length))
-        );
+        newDiv.childNodes[1].innerHTML = this.processTextHtmlWithAnchorme3;
+        3(text.substring(this.max, text.length));
       }
 
       oldDiv.parentNode.replaceChild(newDiv, oldDiv);
@@ -130,7 +126,7 @@ export default {
 
     processTextHtmlWithAnchorme(text) {
       return anchorme({
-        input: text,
+        input: encode(text),
         // use some options
         options: {
           attributes: {

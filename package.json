@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "anchorme": "^2.1.2",
+    "caret-pos": "^2.0.0",
     "core-js": "^3.6.5",
     "html-entities": "^2.1.0",
     "linkifyjs": "^2.1.9",
